@@ -193,15 +193,15 @@ services:
     hostname: fregepoc-frontend-dev
     build:
       context: frontend
-      dockerfile: Dockerfile
-    user: "node"
-    working_dir: /home/node/app
+      dockerfile: dev.Dockerfile
     environment:
       - PORT=${DOCKER_FRONTEND_PORT}
       - REACT_APP_DOCKER_GRAFANA_HOST=fregepoc-grafana-dev
       - REACT_APP_DOCKER_GRAFANA_PORT=3000
+      - CHOKIDAR_USEPOLLING=true
     volumes:
-      - ./frontend:/home/node/app
+      - /app/node_modules
+      - ./frontend:/app
     command: npm start
     ports:
       - ${DOCKER_FRONTEND_PORT}:${DOCKER_FRONTEND_PORT}
@@ -222,6 +222,10 @@ services:
 
   fregepoc-frontend-prod:
     <<: *frontend
+    build:
+      context: frontend
+      dockerfile: prod.Dockerfile
+    command: /bin/sh -c "envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     container_name: fregepoc-frontend-prod
     hostname: fregepoc-frontend-prod
     ports: []
